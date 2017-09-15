@@ -57,6 +57,7 @@ def sendmail():
     message["Bcc"] = mail_bcc
     message.attach(MIMEText(mail_body, 'html'))
 
+    # trying to send email immediately
     try:
         response = mailer.send_message(mail_from, mailto, message.as_string())
         app.logger.info('response')
@@ -76,7 +77,9 @@ def sendmail():
                      mail_cc=mail_cc,
                      mail_bcc=mail_bcc,
                      mail_subj=mail_subj,
-                     body=message.as_string()
+                     body=message.as_string(),
+                     status=False if response_dictionary['status_code'] != 200 else True,
+                     counter=1
                      )
         db.session.add(mail)
         db.session.flush()
@@ -91,6 +94,7 @@ def sendmail():
         db.session().rollback()
         response_dictionary['status_code'] = 500
         response_dictionary['error_message'] = "db error"
+        app.logger.error(str(e))
 
     return jsonify(**response_dictionary)
 
